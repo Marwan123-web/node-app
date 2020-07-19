@@ -23,7 +23,9 @@ const courseSchema = mongoose.Schema({
         }],
         tasks: [{
             type: { type: String },
-            path: { type: String }
+            path: { type: String },
+            deadLine: { type: String },
+
         }],
         lectures: [{
             lectureNumber: { type: Number },

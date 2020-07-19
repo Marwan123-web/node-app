@@ -113,6 +113,9 @@ router.post('/add/course/semester/attendance/:id/:semester', TeacherStudentContr
 
 router.post('/add/course/semester/material/:id/:semester', TeacherStudentController.addSemesterMaterial);
 
+router.post('/upload/course/semester/assignment/solution/:id/:courseCode/:semester', TeacherStudentController.uploadAssignmentSolution);
+
+
 
 // ----------------GET Requests----------------
 router.get('/my/courses/:id', TeacherStudentController.myCourses); //mo4trk m3 student

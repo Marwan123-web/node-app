@@ -21,8 +21,8 @@ class teacherService {
     static searchformaterial(courseId, semester_time, materialname) {
         return Course.findOne({ courseCode: courseId, 'semesters.semester_time': semester_time, 'semesters.materials.type': { $in: materialname } }, { semesters: { $elemMatch: { semester_time: semester_time } } })
     }
-    static addTask(courseId, semester_time, taskType, taskPath) {
-        var task = { type: taskType, path: taskPath };
+    static addTask(courseId, semester_time, taskType, taskPath, deadLine) {
+        var task = { type: taskType, path: taskPath, deadLine: deadLine };
         return Course.findOne({ courseCode: courseId }).updateOne(
             { courseCode: courseId, "semesters.semester_time": semester_time }, // your query, usually match by _id
             { $push: { "semesters.$.tasks": task } }, // item(s) to match from array you want to pull/remove

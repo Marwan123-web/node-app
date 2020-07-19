@@ -4,7 +4,8 @@ const Grade = require('../models/grade');
 const Attendance = require('../models/attendance');
 
 const teacherService = require('../service/teacher-student');
-const course = require('../models/course');
+const Assinment = require('../models/assignments');
+
 
 // ----------------------My Courses-----------------------
 exports.myCourses = async (req, res, next) => { //[]
@@ -94,6 +95,7 @@ exports.myCoursesByStatus = async (req, res, next) => { //[]
 exports.addSemesterTask = async (req, res, next) => { //[]
     let taskType = req.body.type;
     let taskPath = req.body.path;
+    let deadLine = req.body.deadLine;
     let courseId = req.params.id;
     let semester_time = req.params.semester;
     try {
@@ -112,7 +114,7 @@ exports.addSemesterTask = async (req, res, next) => { //[]
                 msg: "this name of task was added before"
             });
         } else {
-            teacherService.addTask(courseId, semester_time, taskType, taskPath).then((courseId) => {
+            teacherService.addTask(courseId, semester_time, taskType, taskPath, deadLine).then((courseId) => {
                 if (courseId) {
                     res.json({ msg: 'Task Added Successfuly' });
                 }
@@ -126,7 +128,44 @@ exports.addSemesterTask = async (req, res, next) => { //[]
         res.status(500).send("Error in Adding");
     }
 }
-
+// -------------------Upload Assignment Solution --------------------------
+exports.uploadAssignmentSolution = async (req, res, next) => { //[]
+    let studentId = req.params.id;
+    let courseId = req.params.courseCode;
+    let semester_time = req.params.semester;
+    const { date, taskType, solutionLink } = req.body
+    try {
+        let checkAssignmentSolution = await Assinment.findOne({
+            studentId, courseId, semester_time, taskType
+        });
+        let checkTaskDeadLine = await Course.findOne({ courseCode: courseId }, { semesters: { $elemMatch: { semester_time: semester_time } } });
+        let tasks = checkTaskDeadLine.semesters[0].tasks;
+        for (let i = 0; i < tasks.length; i++) {
+            if (tasks[i].type == taskType) {
+                var catchedtask = tasks[i];
+                break;
+            }
+        }
+        if (catchedtask.deadLine < date) {
+            return res.status(400).json({
+                msg: "Deadline Has Been Finished For This Assignment"
+            });
+        }
+        else if (checkAssignmentSolution) {
+            return res.status(400).json({
+                msg: "You Have Upload This Assignment Solution Before"
+            });
+        }
+        else {
+            const newAssignmentSolution = new Assinment({ studentId, courseId, semester_time, date, taskType, solutionLink });
+            await newAssignmentSolution.save();
+            res.status(200).json({ msg: 'Assignment Solution Link Sent Successfuly', });
+        }
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).send("Error in Adding");
+    }
+}
 // -------------------Delete Semester Task--------------------------
 exports.deleteSemesterTask = async (req, res, next) => { //[]
     let code = req.params.id;
